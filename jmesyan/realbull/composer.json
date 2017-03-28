@@ -1,0 +1,12 @@
+{
+    "name": "jmesyan/realbull",
+    "description": "works in realbull company",
+    "authors": [
+        {
+            "name": "Jmesyan",
+            "email": "jieqiang1017@163.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
