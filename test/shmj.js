@@ -7,6 +7,7 @@ const token = "ghSgB0V6AyJSG8j8nOq4BKp2qHo6b0fPxrLU1R9yend73Ibv2vyOl75HjB0DJe4dU
 
 var base = new baselib(hostname, port, token);
 
+//新手升级测试
 base.funytest(constants.TEST_OFF, "newerlevelup test", function(t){
    base.getApiData("/mobile/newerLevelUp", [], function(res){
         data = res.data
@@ -15,13 +16,13 @@ base.funytest(constants.TEST_OFF, "newerlevelup test", function(t){
         t.end()
     })
     
-    base.getApiData("/mobile/newerLevelUpAwardGet", [{key:"level", val:21}], function(res){
+    base.getApiData("/mobile/newerLevelUpAwardGet", {level:21}, function(res){
         t.equal(res.ret, 1)
         t.equal(res.msg, "该等级奖励不存在")
     })
 });
 
-
+//微信支付测试
 base.funytest(constants.TEST_ON, "weixinPay gift", function(t){
      var post_data = {
         return_code:"SUCCESS", 
@@ -29,19 +30,16 @@ base.funytest(constants.TEST_ON, "weixinPay gift", function(t){
         transaction_id:"123", 
         out_trade_no:"1"
     };
-    base.postApiData("/mobile/weixinCallback/6/101", [], post_data, function(res){
+    base.postApiData("/mobile/weixinCallback/6/101", constants.EMPTY_PARAMS, post_data, function(res){
         t.pass("the result is callback:");
         console.log(res);
         t.end();
     })
 });
 
-
+//苹果支付测试
 base.funytest(constants.TEST_OFF, "applePay gift", function(t){
-    var post_data = {
-
-    }
-    base.postApiData("/mobile/appstoreCallback",[], post_data, function(res){
+    base.postApiData("/mobile/appstoreCallback",constants.EMPTY_PARAMS, constants.EMPTY_PARAMS, function(res){
       t.pass("the result is callback:");
         console.log(res);
         t.end();  
@@ -49,8 +47,9 @@ base.funytest(constants.TEST_OFF, "applePay gift", function(t){
 });
 
 
-base.funytest(constants.TEST_OFF, "exchange gift", function(t){
-    var data = [{key:"gift_id", val:"150"}, {key:"name", val:"小燕"}, {key:"tel", val:"18516536416"}, {key:"address", val:"上海市浦东新区123号"} ];
+//礼物兑换测试
+base.funytest(constants.TEST_ON, "exchange gift", function(t){
+    var data = {gift_id:150, 'name':'小燕', 'tel':'18516536416', 'address':'上海市浦东新区123号'};
    base.getApiData("/mobile/ticketOrder", data, function(res){
         t.pass("the result is callback");
         console.log(res);

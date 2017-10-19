@@ -26,9 +26,12 @@ BaseTest.prototype.getApiData = function(url, params, cb) {
         method: 'GET'
     };
     var path = url+"?token="+this.token
-    for (var i in params) {
-        path += ("&"+params[i].key+"="+params[i].val)
+    if (params instanceof Object){
+        for (var i in params) {
+            path += ("&"+i+"="+params[i])
+        }    
     }
+    
     options.path = encodeURI(path);
     //发送请求
     var req = http.request(options,function(res){
@@ -48,8 +51,10 @@ BaseTest.prototype.getApiData = function(url, params, cb) {
 BaseTest.prototype.postApiData = function(url, params, pdata, cb) {
     var pdata = querystring.stringify(pdata);
     var path = url+"?token="+this.token
-    for (var i in params) {
-        path += ("&"+params[i].key+"="+params[i].val)
+     if (params instanceof Object){
+        for (var i in params) {
+            path += ("&"+i+"="+params[i])
+        }    
     }
     path =  encodeURI(path);
     var options = {
