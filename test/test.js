@@ -9,7 +9,7 @@ var hp = new httpd("taizhoumj.local.com", 80, "QR6WcECcf1.a9JjpL-Y7iKOTndxZmpPti
 
 describe("好友抢红包活动", function(){
 	this.timeout(0);
-	it("should return the result", function(done){
+	it("should return get result", function(done){
 		hp.get("/mobile/robRedpack", {})
 		.then(function(res){
 			expect(res).to.be.a("object");
@@ -17,5 +17,15 @@ describe("好友抢红包活动", function(){
 		}).catch(function(err){
 			done(err);
 		});
-	})
+	});
+
+	it("should return post result", function(done){
+		hp.post("/mobile/robRedpack", {}, {id:30})
+		.then(function(res){
+			expect(res).to.be.a("object");
+			done();
+		}).catch(function(err){
+			done(err);
+		});
+	});
 });
