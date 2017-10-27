@@ -48,6 +48,7 @@ BaseTest.prototype.getApiData = function(url, params, cb) {
             
         });
     });
+    console.log("req instanceof Promise", req instanceof Promise);
     //如果有错误会输出错误
     req.on('error', function(e){
          console.log('错误：' + e.message);
