@@ -3,6 +3,7 @@ var http = require('http');
 var querystring = require("querystring");
 var test = require('tape');
 var constants = require('./constants');
+var colors = require( "colors");
 
 
 function BaseTest(hostname, port, token){
@@ -31,14 +32,20 @@ BaseTest.prototype.getApiData = function(url, params, cb) {
             path += ("&"+i+"="+params[i])
         }    
     }
-    
-    options.path = encodeURI(path);
+    path = encodeURI(path);
+    options.path = path;
+    console.warn("The Request is:".blue, path.green);
     //发送请求
     var req = http.request(options,function(res){
         res.setEncoding('utf8');
         res.on('data',function(chunk){
-            returnData = JSON.parse(chunk);//如果服务器传来的是json字符串，可以将字符串转换成json
-            cb(returnData)
+            if(chunk instanceof Object){
+                returnData = JSON.parse(chunk);//如果服务器传来的是json字符串，可以将字符串转换成json
+                cb(returnData)
+            } else {
+                cb(chunk);
+            }
+            
         });
     });
     //如果有错误会输出错误

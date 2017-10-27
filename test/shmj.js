@@ -23,7 +23,7 @@ base.funytest(constants.TEST_OFF, "newerlevelup test", function(t){
 });
 
 //微信支付测试
-base.funytest(constants.TEST_ON, "weixinPay gift", function(t){
+base.funytest(constants.TEST_OFF, "weixinPay gift", function(t){
      var post_data = {
         return_code:"SUCCESS", 
         result_code:"SUCCESS", 
@@ -47,12 +47,24 @@ base.funytest(constants.TEST_OFF, "applePay gift", function(t){
 });
 
 
-//礼物兑换测试
-base.funytest(constants.TEST_ON, "exchange gift", function(t){
+//礼物兑换
+base.funytest(constants.TEST_OFF, "exchange gift", function(t){
     var data = {gift_id:150, 'name':'小燕', 'tel':'18516536416', 'address':'上海市浦东新区123号'};
    base.getApiData("/mobile/ticketOrder", data, function(res){
         t.pass("the result is callback");
         console.log(res);
         t.end();
     });
+});
+
+//修改用户表情
+base.funytest(constants.TEST_ON, "change user emojis:", function(t){
+    var eids = [1, 2, 3, 12];
+    var params = {type:1, eids:eids};
+    base.getApiData("/mobile/changeUserEmojis", params, function(res){
+        // var res = JSON.parse(res);
+        var a = {}.toString.call(res);
+        console.log(a);
+        t.end();
+    })
 });

@@ -1,3 +1,4 @@
 test/node_modules/
 .idea/
 mocha/node_modules/
+pomelo/template/web-server/node_modules/

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<script type="text/javascript">
+	var wsServer = 'ws://192.168.6.10:7591';
+	var ws = new WebSocket(wsServer);
+
+	ws.onopen = function (e) {
+		console.log("Connected to WebSocket server.",e);
+	} ;
+
+	ws.onclose = function (e) {
+		console.log("Disconnected",e);
+	} ;
+
+	ws.onmessage = function(e) {
+		console.log("RECEIVED: " + e.data, e);
+		ws.close();
+	}
+
+	ws.onerror = function (e) {
+		console.log('Error occured: ' + e.data,e);
+	} ;
+
+</script>
+</body>
+</html>
