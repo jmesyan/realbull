@@ -4,6 +4,7 @@ var querystring = require("querystring");
 function httpd(host, port, token){
 	this.host = host;
 	this.port = port;
+	this.default = token;
 	this.token = token;
 }
 

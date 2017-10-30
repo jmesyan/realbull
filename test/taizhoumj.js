@@ -13,19 +13,11 @@ describe("好友抢红包活动", function(){
 		hp.get("/mobile/robRedpack", {})
 		.then(function(res){
 			expect(res).to.be.a("object");
+			expect(res.ret).to.equal(1);
 			done();
 		}).catch(function(err){
 			done(err);
 		});
 	});
 
-	it("should return post result", function(done){
-		hp.post("/mobile/robRedpack", {}, {id:30})
-		.then(function(res){
-			expect(res).to.be.a("object");
-			done();
-		}).catch(function(err){
-			done(err);
-		});
-	});
 });
