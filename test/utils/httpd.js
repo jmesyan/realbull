@@ -10,6 +10,7 @@ function httpd(host, port, token){
 
 var proto = httpd.prototype;
 
+
 proto.serizeParams = function(params) {
 	if (! params instanceof Object) {
 		console.error("the params is not a object");

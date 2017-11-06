@@ -9,9 +9,10 @@ var hp = new httpd("taizhoumj.local.com", 80, "QR6WcECcf1.a9JjpL-Y7iKOTndxZmpPti
 
 describe("好友抢红包活动", function(){
 	this.timeout(0);
-	it("should return get result", function(done){
+	it("入口页面", function(done){
 		hp.get("/mobile/robRedpack", {})
 		.then(function(res){
+			console.log(res);
 			expect(res).to.be.a("object");
 			expect(res.ret).to.equal(1);
 			done();
@@ -21,3 +22,4 @@ describe("好友抢红包活动", function(){
 	});
 
 });
+
