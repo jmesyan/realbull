@@ -3,57 +3,59 @@ var config = require("./config");
 var tools = require("../utils/tools");
 var instance;
 
-
-function queryOrm() {
-	this.conn =  mysql.createPool({
-		'host':config.host,
-		'port':config.port,
-		'user':config.user,
-		'password':config.password,
-		'database':config.database,
-		'connectionLimit':config.connectionLimit
-	});
-	this.alias = []; 
-	this.sql = "";
+function initQpool(){
+	if (!instance) {
+		instance = mysql.createPool({
+			'host':config.host,
+			'port':config.port,
+			'user':config.user,
+			'password':config.password,
+			'database':config.database,
+			'connectionLimit':config.connectionLimit
+		});
+	} 
+	return instance;
 }
 
-var qproto = queryOrm.prototype;
-
-qproto.isString = function() {
-	return tools.isType("String");
+var queryOrm = {
+	pool:initQpool(),
+	alias:[],
+	sql:""
 }
 
-qproto.isObject = function() {
-	return tools.isType("Object");
+queryOrm.isString = function(ob) {
+	return tools.isType("String")(ob);
 }
 
-qproto.isNumber = function() {
-	return tools.isType("Number");
+queryOrm.isObject = function(ob) {
+	return tools.isType("Object")(ob);
 }
 
-qproto.escape = function(str) {
-	return this.conn.escape(str);
+queryOrm.isNumber = function(ob) {
+	return tools.isType("Number")(ob);
 }
 
-qproto.field = function(field) {
+queryOrm.escape = function(str) {
+	return this.pool.escape(str);
+}
+
+queryOrm.field = function(field) {
 	if (!this.isString(field)) {
-		console.error("field语句的参数必须是字符串");
-		return;
+		throw "field语句的参数必须是字符串";
 	}
 	this.alias['field'] = field;
 	return this;
 }
 
-qproto.table = function(table) {
+queryOrm.table = function(table) {
 	if (!this.isString(table)) {
-		console.error("field语句的参数必须是字符串");
-		return;
+		throw "field语句的参数必须是字符串";
 	}
 	this.alias['table'] = table;
 	return this;
 }
 
-qproto.where = function(where) {
+queryOrm.where = function(where) {
 	this.alias['where'] = '';
 	if (this.isObject(where)) {
 		for (var key in where) {
@@ -66,45 +68,41 @@ qproto.where = function(where) {
 	}
 	return this;
 }
-qproto.limit = function(limit) {
+queryOrm.limit = function(limit) {
     this.alias['limit'] = '';
     if( this.isNumber( $limit ) ){
        this.alias['limit'] = '0,{0}'.format(limit);
     }else if( this.isString( limit ) ){
         this.alias['limit'] = limit;
     }else{
-    	console.error("limit语句的参数必须为数字或字符串");
-    	return;
+    	throw "order语句的参数必须为字符串";
     }
     return this;
 }
 
-qproto.order = function(order){
+queryOrm.order = function(order){
 	if(!isString(order)){
-    	console.error("order语句的参数必须为字符串");
-    	return;
+    	throw "order语句的参数必须为字符串";
 	}
 	this.alias['order'] = order;
 	return this;
 }
 
-qproto.group = function(group){
+queryOrm.group = function(group){
 	if(!isString(group)){
-    	console.error("group语句的参数必须为字符串");
-    	return;
+    	throw "group语句的参数必须为字符串";
 	}
 	this.alias['group'] = group;
 	return this;
 }
-qproto.ParseSelectSql = function()
+queryOrm.ParseSelectSql = function()
 {
         this.sql = 'select * ';
         if( !tools.isEmpty( this.alias['field'] ) ){
             this.sql = this.sql.replace(/(\*)/, this.alias['field']);
         }
         if( tools.isEmpty(this.alias['table'] ) ){
-            console.error("请用table子句设置查询表");
-    		return;
+    		throw "请用table子句设置查询表";
         }else{
             this.sql += " from {0}".format(this.alias['table']);
         }
@@ -121,166 +119,143 @@ qproto.ParseSelectSql = function()
             this.sql +=  " limit {0}".format(this.alias['limit']);
         }
 }
-qproto.ParseAddSql = function() {
+queryOrm.ParseAddSql = function() {
         this.sql = 'insert into ';
         if( tools.isEmpty( this.alias['table'] ) ){
-            console.error("请用table子句设置添加表");
-    		return;
+    		throw "请用table子句设置添加表";
         }else{
             this.sql += "{0} set".format(this.alias['table'])
         }
         return this.sql;
 }
-qproto.ParseUpdateSql = function() {
+queryOrm.ParseUpdateSql = function() {
         this.sql = 'update ';
         if( tools.isEmpty( this.alias['table'] ) ){
-            console.error("请用table子句设置修改表");
-    		return;
+    		throw "请用table子句设置修改表";
         }else{
             this.sql += "{0} set".format(this.alias['table'])
         }
         if( tools.isEmpty( this.alias['where'] ) ){
-            console.error("更新语句必须有where子句指定条件");
-    		return;
+    		throw "更新语句必须有where子句指定条件";
         }
         return this.sql;
 }
-qproto.ParseDeleteSql = function() {
+queryOrm.ParseDeleteSql = function() {
         this.sql = 'delete from ';
         if( tools.isEmpty( this.alias['table'] ) ){
-            console.error("请用table子句设置删除表");
-    		return;
+    		throw "请用table子句设置删除表";
         }else{
             this.sql += this.alias['table'];
         }
         if( tools.isEmpty( this.alias['where'] ) ){
-            console.error("删除语句必须有where子句指定条件");
-    		return;
+    		throw "删除语句必须有where子句指定条件";
         }
         this.sql += " where {0}".format(this.alias['where']);
         return this.sql;
 }
-qproto.select = function() {
-        this.ParseSelectSql();
-        var row = new Promise((resolve, reject) => {
-        	this.conn.query(this.sql, function(error, results, fields){
-        		resolve({error:error, results:results, fields:fields});
-        	});
-        });
 
-        return row;
-        // $row = this.conn->query( this.sql )->fetchAll( PDO::FETCH_ASSOC );
-        // $result = [];
-        // foreach( $row as $key=>$vo ){
-        //     $arrObj = clone $this;  //clone当前对象防止对this对象造成污染
-        //     $arrObj->data = $vo;
-        //     $result[$key] = $arrObj;
-        //     unset( $arrObj );
-        // }
-        // return $result;
+queryOrm._poolQuery = function(sql, cb) {
+	this.pool.getConnection(function(err, connection){
+		connection.query(sql, function(error, results, fields){
+    		cb(results);
+    		if (error) console.error(error.sqlMessage,":", error.sql);
+    		connection.release();
+    	});	
+	});
 }
-    // //查询一条
-    // public function find()
-    // {
-    //     this.ParseSelectSql();
-    //     $row = this.conn->query( this.sql )->fetch( PDO::FETCH_ASSOC );
-    //     $arrObj = clone $this;  //clone当前对象防止对this对象造成污染
-    //     $arrObj->data = $row;
-    //     $result = $arrObj;
-    //     unset( $arrObj );
-    //     return $result;
-    // }
-    // //添加数据
-    // public function add( $data )
-    // {
-    //     if( !is_array( $data ) ){
-    //         throw new exception("添加数据add方法参数必须为数组");
-    //     }
-    //     this.ParseAddSql();
-    //     foreach( $data as $key=>$vo ){
-    //         this.sql += " `{$key}` = '" . $vo . "',";
-    //     }
-    //     this.conn->exec( rtrim( this.sql, ',' ) );
-    //     return this.conn->lastInsertId();
-    // }
-    // //更新语句
-    // public function update( $data )
-    // {
-    //     if( !is_array( $data ) ){
-    //         throw new exception("更新数据update方法参数必须为数组");
-    //     }
-    //     this.ParseUpdateSql();
-    //     foreach( $data as $key=>$vo ){
-    //         this.sql += " `{$key}` = '" . $vo . "',";
-    //     }
-    //     this.sql = rtrim( this.sql, ',' ) . ' where ' . this.alias['where'];
-    //     return this.conn->exec( this.sql );
-    // }
-    // //删除语句
-    // public function delete()
-    // {
-    //     this.ParseDeleteSql();
-    //     return this.conn->exec( this.sql );
-    // }
-    // //获取查询数据
-    // public function getData()
-    // {
-    //     return this.data;
-    // }
-    // //获取最后一次执行的sql语句
-    // public function getLastSql()
-    // {
-    //     return this.sql;
-    // }
-    // public function __get($name)
-    // {
-    //     return this.getData()[$name];
-    // }
-    // public function offsetExists($offset)
-    // {
-    //     if( !isset( this.getData()[$offset] ) ){
-    //         return NULL;
-    //     }
-    // }
-    // public function offsetGet($offset)
-    // {
-    //     return this.getData()[$offset];
-    // }
-    // public function offsetSet($offset, $value)
-    // {
-    //     return this.data[$offset] = $value;
-    // }
-    // public function offsetUnset($offset)
-    // {
-    //     unset( this.data[$offset] );
-    // }
- 
-//  var Client = {};
 
-// Client.getInstance = function(){
-// 	if (!instance) {
-// 		instance = new ProxyClient();
-// 	}
-// 	return instance;
-// }
+queryOrm.poolQuery = function(sql, cb) {
+	var row;
+    if (cb) {
+    	row = new Promise((resolve, reject) => {
+    		this._poolQuery(sql, cb);
+    		resolve(null);
+    	});
+    }  else {
+    	row = new Promise((resolve, reject) => {
+        	this._poolQuery(sql, resolve);
+    	});
+    }
+    return row;
+}
 
-// function ProxyClient() {
-// 	this.client = mysql.createPool({
-// 		'host':config.host,
-// 		'port':config.port,
-// 		'user':config.user,
-// 		'password':config.password,
-// 		'database':config.database,
-// 		'connectionLimit':config.connectionLimit
-// 	});
-// 	this.quer = queryOrm(this.client);
-// }
+queryOrm._poolQueryOne = function(sql, cb) {
+	this.pool.getConnection(function(err, connection){
+		connection.query(sql, function(error, results, fields){
+    		if (results) cb(results[0]); else cb([]);
+    		if (error) console.error(error.sqlMessage,":", error.sql);
+    		connection.release();
+    	});	
+	});
+}
 
-// var proto = ProxyClient.prototype;
+queryOrm.poolQueryOne = function(sql, cb) {
+ 	var row;
+    if (cb) {
+    	row = new Promise((resolve, reject) => {
+    		this._poolQueryOne(sql, cb);
+    		resolve(null);
+    	});
+    }  else {
+    	row = new Promise((resolve, reject) => {
+        	this._poolQueryOne(sql, resolve);
+    	});
+    }
+    return row;
+}
 
-// proto.select = function(sql, params, cb) {
-	
-// }
+queryOrm.select = function(cb) {
+        this.ParseSelectSql();
+        var sql = this.sql;
+        var row = this.poolQuery(sql, cb);
+        return row;
+        
+}
+queryOrm.find = function(cb) {
+     	this.ParseSelectSql();
+        var sql = this.sql;
+        var row = this.poolQueryOne(sql, cb);
+        return row;
+}
+queryOrm.add = function(data, cb)
+{
+    if(!this.isObject(data)){
+        throw "添加数据add方法参数必须为object";
+    }
+    this.ParseAddSql();
+    var sql = "";
+    for (var key in data) {
+    	const vo = data[key];
+    	sql += ", `{0}` = {1}".format(key, this.escape(vo));
+    }
+    sql = sql.substring(1);
+    this.sql += sql;
+    return this.poolQuery(this.sql, cb);
+}
+queryOrm.update  = function(data, cb)
+{
+    if( !this.isObject(data)){
+        throw "更新数据update方法参数必须为object";
+    }
+    this.ParseUpdateSql();
+    var sql = "";
+    for (var key in data) {
+    	const vo = data[key];
+    	sql += ", `{0}` = {1}".format(key, this.escape(vo));
+    }
+    sql = sql.substring(1);
+    this.sql += (sql + " where {0}".format(this.alias['where']));
+    return this.poolQuery(this.sql, cb);
+}
+queryOrm.delete = function(cb)
+{
+    this.ParseDeleteSql();
+    return this.poolQuery(this.sql, cb);
+}
+queryOrm.getLastSql = function()
+{
+    return this.sql;
+}
 
 module.exports =  queryOrm;
 
