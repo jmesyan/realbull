@@ -6,7 +6,7 @@ var should = chai.should();  // Using Should style
 var httpd = require("./utils/httpd");
 var tools = require("./utils/tools");
 var db = require("./db/mysql");
-var hp = new httpd("shmj.local.com", 80, "ghSgB0V6AyJSG8j8nOq4BKp2qHo6b0fPxrLU1R9yend73Ibv2vyOl75HjB0DJe4dUlEsTWBqPhV4Ga5MJUYZ-S5Bi.6EhRq0oQJ7eDQuboCtb2J0VzmD3A!!");
+var hp = new httpd("shmj.local.com", 80, 13032);
 
 // describe("大厅页面", function(){
 // 	it("入口页面", function(){
@@ -17,5 +17,9 @@ var hp = new httpd("shmj.local.com", 80, "ghSgB0V6AyJSG8j8nOq4BKp2qHo6b0fPxrLU1R
 
 // });
 
-var key = tools.makePkey(13032, 1510040554, "zh_CN");
-console.log(key);
+// var token = tools.makePkey(12603, tools.time(), "zh_CN", 1);
+// console.log(token);
+
+// var result = tools.uDecode(token);
+// console.log(result.u);
+

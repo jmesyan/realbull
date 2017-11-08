@@ -9,7 +9,7 @@ describe('测试数字', function () {
 		return 10+num;
 	}
 
-	it.only("负数减", function(){
+	it("负数减", function(){
 		var anum = 6;
 		expect(cb(-anum)).to.equal(4);
 	})

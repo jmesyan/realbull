@@ -1,11 +1,11 @@
 var http = require('http');
 var querystring = require("querystring");
+var tools = require("./tools");
 
-function httpd(host, port, token){
+function httpd(host, port, uid){
 	this.host = host;
 	this.port = port;
-	this.default = token;
-	this.token = token;
+	this.uid = this.default = uid;
 }
 
 var proto = httpd.prototype;
@@ -22,6 +22,19 @@ proto.serizeParams = function(params) {
     return path;
 }
 
+proto.setUid = function(uid) {
+	this.uid = uid;
+}
+
+proto.resetUid = function() {
+	this.uid = this.default;
+}
+
+proto.getToken = function() {
+	var uid = this.uid || this.default || 0;
+	var token = tools.makePkey(uid, tools.time(), "zh_CN");
+	return token;
+}
 
 proto.get = function(url, params){
     var options = {
@@ -30,7 +43,7 @@ proto.get = function(url, params){
         method: 'GET'
     };
 
-    var path = encodeURI(url+"?token="+this.token+this.serizeParams(params));
+    var path = encodeURI(url+"?token="+this.getToken()+this.serizeParams(params));
     options.path = path;
 
     var promise = new Promise((resolve, reject) => {
@@ -68,7 +81,7 @@ proto.get = function(url, params){
 
 proto.post = function(url, params, pdata, headers){
     var post_data = querystring.stringify(pdata);
-    var path = encodeURI(url+"?token="+this.token+this.serizeParams(params));
+    var path = encodeURI(url+"?token="+this.getToken()+this.serizeParams(params));
     if (headers && headers instanceof Object) {
     	headers["Content-Length"] = Buffer.byteLength(post_data);
     } else {

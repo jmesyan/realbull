@@ -45,3 +45,11 @@ exports.makePkey = function(uid, timestamp, locale) {
 	var eobj = {u:uid, t:timestamp, l:locale, m:ismobile, g:gss, a:appID, b:bundleid};
 	return cryptos.des.encrypt(eobj);
 }
+
+exports.uDecode = function(str) {
+	return cryptos.des.decrypt(str);
+}
+
+exports.time = function() {
+	return Math.round(+new Date()/1000);
+}
