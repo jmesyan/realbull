@@ -12,12 +12,12 @@ var proto = httpd.prototype;
 
 
 proto.serizeParams = function(params) {
-	if (! params instanceof Object) {
+	if (! tools.isObject(params)) {
 		console.error("the params is not a object");
 	}
 	var path ="";
  	for (var key in params) {
-        path += ("&"+key+"="+params[i])
+        path += ("&"+key+"="+params[key])
     }  
     return path;
 }

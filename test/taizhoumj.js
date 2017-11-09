@@ -12,9 +12,9 @@ describe("好友抢红包活动", function(){
 	it("入口页面", function(done){
 		hp.get("/mobile/robRedpack", {})
 		.then(function(res){
-			console.log(res);
 			expect(res).to.be.a("object");
 			expect(res.ret).to.equal(0);
+			expect(res.data.maxRob).to.equal(1);
 			done();
 		}).catch(function(err){
 			done(err);
